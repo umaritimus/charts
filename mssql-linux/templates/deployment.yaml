@@ -33,18 +33,36 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ACCEPT_EULA
+              value: "{{ .Values.acceptEula | upper }}"
+            - name: MSSQL_PID
+              value: "{{ .Values.mssqlPid }}"
+            - name: SA_PASSWORD
+              value: "{{ .Values.saPassword }}"
+            - name: MSSQL_COLLATION
+              value: "{{ .Values.mssqlCollation }}"
+            {{ if .Values.resources.limits.memory }}
+            - name: MSSQL_MEMORY_LIMIT_MB
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: 1Mi
+            {{ end }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: mssql
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+               port: mssql
+            initialDelaySeconds: 20
+            periodSeconds: 20
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+               port: mssql
+            initialDelaySeconds: 20
+            periodSeconds: 20
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       {{- with .Values.nodeSelector }}

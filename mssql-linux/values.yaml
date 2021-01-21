@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: nginx
+  repository: mcr.microsoft.com/mssql/server
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: ""
+  tag: "2019-latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -38,7 +38,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 1433
 
 ingress:
   enabled: false
@@ -53,14 +53,14 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-resources: {}
+resources:
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
+  limits:
   #   cpu: 100m
-  #   memory: 128Mi
+    memory: 2Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
@@ -77,3 +77,9 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# SQL Server specific parameters
+acceptEula: 'Y'
+mssqlPid: 'Developer'
+mssqlCollation: 'Latin1_General_BIN'
+saPassword: 'B2f97c2b86cac14ceaed7!'
