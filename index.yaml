@@ -1,0 +1,17 @@
+apiVersion: v1
+entries:
+  mssql-linux:
+  - apiVersion: v2
+    appVersion: 2019-CU8-ubuntu-16.04
+    created: "2021-01-21T21:10:14.4253008-08:00"
+    description: MicroSoft SQL Server 2019 Linux Helm Chart
+    digest: 02c7d64bf67664e68c059b8921ba7d817d2e8544ead78a196ab5fa168301b793
+    icon: https://img-prod-cms-rt-microsoft-com.akamaized.net/cms/api/am/imageFileData/RE1I4Dx
+    maintainers:
+    - name: umaritimus
+    name: mssql-linux
+    type: application
+    urls:
+    - mssql-linux-0.9.1.tgz
+    version: 0.9.1
+generated: "2021-01-21T21:10:14.4243007-08:00"
