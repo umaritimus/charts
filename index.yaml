@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  mssql-linux:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2021-01-21T14:35:34.2489262-08:00"
+    description: A Helm chart for Kubernetes
+    digest: 641e01bb0bfa74c3ae9531c0a38c5a203bde2dbedc95ccceedf72ed9f05f5e49
+    name: mssql-linux
+    type: application
+    urls:
+    - mssql-linux-0.1.0.tgz
+    version: 0.1.0
+generated: "2021-01-21T14:35:34.2479265-08:00"
