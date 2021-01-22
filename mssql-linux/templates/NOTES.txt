@@ -1,0 +1,59 @@
+SQL Server Edition: {{ .Values.mssqlPid }}
+SQL Server Name: {{ include "mssql-linux.fullname" . }}.{{ .Release.Namespace }}
+Port: {{ .Values.service.port }}
+Server Collation: {{ .Values.mssqlCollation }}
+
+Steps to access SQL Server instance
+
+1. Discover 'sa' password, which was randomly generated during the deployment
+
+Bash:  
+$ printf $(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "mssql-linux.secret" . }} -o jsonpath="{.data.{{ template "mssql-linux.passwordKey" . }}}" | base64 --decode);echo
+
+Powershell:
+$ [Text.Encoding]::Utf8.GetString([Convert]::FromBase64String($(kubectl get secret --namespace {{ .Release.Namespace }} {{ template "mssql-linux.secret" . }} -o jsonpath="{.data.{{ template "mssql-linux.passwordKey" . }}}")))
+
+
+2. Discover service location
+
+Bash:
+{{- if contains "NodePort" .Values.service.type }}
+$ export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "mssql-linux.fullname" . }})
+$ export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+$ export SERVICE_LOCATION=$NODE_IP,$NODE_PORT
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "mssql-linux.fullname" . }}'
+$ export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "mssql-linux.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+$ export SERVICE_LOCATION=$SERVICE_IP,{{ .Values.service.port }}
+{{- else if contains "ClusterIP" .Values.service.type }}
+$ export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "mssql-linux.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+$ export CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+$ export SERVICE_LOCATION=127.0.0.1,$CONTAINER_PORT
+$ kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME $CONTAINER_PORT:$CONTAINER_PORT
+{{- end }}
+
+Powershell:
+{{- if contains "NodePort" .Values.service.type }}
+$ $NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "mssql-linux.fullname" . }})
+$ $NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
+$ $SERVICE_LOCATION="${NODE_IP},${NODE_PORT}"
+{{- else if contains "LoadBalancer" .Values.service.type }}
+     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
+           You can watch the status of by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "mssql-linux.fullname" . }}'
+$ $SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "mssql-linux.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
+$ $SERVICE_LOCATION="${SERVICE_IP},{{ .Values.service.port }}"
+{{- else if contains "ClusterIP" .Values.service.type }}
+$ $POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "mssql-linux.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+$ $CONTAINER_PORT=$(kubectl get pod --namespace {{ .Release.Namespace }} $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+$ $SERVICE_LOCATION="127.0.0.1,${CONTAINER_PORT}"
+$ $(kubectl --namespace {{ .Release.Namespace }} port-forward ${POD_NAME} ${CONTAINER_PORT}:${CONTAINER_PORT})
+{{- end }}
+
+
+3. Test the connection to the SQL Server instance using the following set of commands in a different terminal:
+
+(Note: You will be prompted for the SA password, use the password generated in Step 1)
+$ kubectl run mssqlcli --image=microsoft/mssql-tools -ti --restart=Never --rm=true -- /bin/bash
+$ sqlcmd -S $SERVICE_LOCATION -U sa 
+$ Password: <Enter Password for SA>
