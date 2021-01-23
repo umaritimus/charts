@@ -5,7 +5,7 @@ Dumping ground for various Helm Charts
 ## To-Do
 
 - Consolidate all peoplesoft-related kubernetes helm charts under a single project
-- Deprecate consul and vault charts in favor of the official hashcorp variants
+- Deprecate consul and vault charts in favor of the official hashicorp variants
   * https://github.com/hashicorp/consul-helm
   * https://github.com/hashicorp/vault-helm
 - Enhance mssql-linux implementation
@@ -14,7 +14,8 @@ Dumping ground for various Helm Charts
   * ha-ag
   * passwords from vault in addition to autogen
   * configurable pvc
-  * add rancher-compatible chart questions
+  * add rancher-compatible chart questionaire
+  * istio/linkerd/consul-connect compatibility
 - Split ps-midtier into separate components
   * ps-webapp
   * ps-ib
